@@ -15,11 +15,11 @@ metadata:
   namespace: dev
 spec:
   hard:
-    pods: '10'
+    pods: '4'
     requests.cpu: '1'
     requests.memory: 2Gi
     limits.cpu: '2'
-    limits.memory: 4Gi
+    limits.memory: 8Gi
 ---
 # Sit Namespace
 apiVersion: v1

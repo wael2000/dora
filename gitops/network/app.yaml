@@ -23,7 +23,8 @@ spec:
               protocol: TCP
           env:
             - name: DATABASE_SERVICE_NAME
-              value: mysql.sit.svc.cluster.local
+              value: mysql.dev.svc.cluster.local
+              #value: mysql.sit.svc.cluster.local
             - name: DATABASE_NAME
               valueFrom:
                 secretKeyRef:
