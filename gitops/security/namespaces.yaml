@@ -16,6 +16,10 @@ metadata:
 spec:
   hard:
     pods: '10'
+    requests.cpu: '1'
+    requests.memory: 2Gi
+    limits.cpu: '2'
+    limits.memory: 4Gi
 ---
 # Sit Namespace
 apiVersion: v1
@@ -35,6 +39,10 @@ metadata:
 spec:
   hard:
     pods: '5'
+    requests.cpu: '1'
+    requests.memory: 2Gi
+    limits.cpu: '2'
+    limits.memory: 4Gi
 ---
 apiVersion: v1
 kind: Namespace
@@ -53,3 +61,7 @@ metadata:
 spec:
   hard:
     pods: '5'
+    requests.cpu: '1'
+    requests.memory: 2Gi
+    limits.cpu: '4'
+    limits.memory: 8Gi
