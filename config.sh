@@ -1,5 +1,6 @@
 # desktop env, JDK17
-export JAVA_HOME=/usr/local/opt/openjdk@17
+#export JAVA_HOME=/usr/local/opt/openjdk@17
+export JAVA_HOME=/opt/homebrew/Cellar/openjdk@17/17.0.14/libexec/openjdk.jdk/Contents/Home
 export TESTCONTAINERS_RYUK_DISABLED=true
 
 # replace CLUSTER_URL with env url (e.g. cluster-dtvxj.dtvxj.sandbox3050.opentlc.com)
