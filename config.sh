@@ -3,8 +3,8 @@
 export JAVA_HOME=/opt/homebrew/Cellar/openjdk@17/17.0.14/libexec/openjdk.jdk/Contents/Home
 export TESTCONTAINERS_RYUK_DISABLED=true
 
-export quarkus.container-image.username=
-export quarkus.container-image.password=
+#export quarkus.container-image.username=
+#export quarkus.container-image.password=
 
 #alias oc ~/Documents/openshift/oc
 
@@ -19,17 +19,16 @@ export AWS_SECRET_ACCESS_KEY=
 
 # if no argument arguments, print the help
 if [[ $# -eq 0 ]] ; then
-    echo "                                           _\|/_         "
-    echo "                                           (o o)         "
-    echo '┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━oOO.{-}.OOo━━━━┓'
-    echo '┃  use one of the following arguments                   ┃'
-    echo '┃  - To provision infrastrucutre                        ┃'
-    echo '┃    ./config.sh infra                                  ┃'
-    echo '┃  - To create pipelines                                ┃'    
-    echo '┃    ./config.sh pipeline c                             ┃'
-    echo '┃  - To delete pipelines                                ┃'        
-    echo '┃    ./config.sh pipeline d                             ┃'
-    echo '┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'
+    echo " ▗▄▄▖ ▗▄▖ ▗▖  ▗▖▗▄▄▄▖▗▄▄▄▖ ▗▄▄▖"
+    echo "▐▌   ▐▌ ▐▌▐▛▚▖▐▌▐▌     █  ▐▌   "
+    echo "▐▌   ▐▌ ▐▌▐▌ ▝▜▌▐▛▀▀▘  █  ▐▌▝▜▌           _\|/_      "
+    echo "▝▚▄▄▖▝▚▄▞▘▐▌  ▐▌▐▌   ▗▄█▄▖▝▚▄▞▘           (o o)      "
+    echo '┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━oOO.{-}.OOo━━┓'
+    echo '┃  use one of the following arguments               ┃'
+    echo '┃  ./config.sh infra             # create infra     ┃'
+    echo '┃  ./config.sh pipeline c        # create pipelines ┃'
+    echo '┃  ./config.sh pipeline d        # delete pipelines ┃'
+    echo '┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'
     exit 0
 fi
 
