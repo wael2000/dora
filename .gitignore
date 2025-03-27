@@ -7,3 +7,4 @@ gitops/scripts/azure_to_dc.token
 gitops/provisioning/cluster/cluster-secrets.yaml
 gitops/provisioning/cluster/credentials.yaml
 gitops/provisioning/vm/mysql.md
+config-local.sh
