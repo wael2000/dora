@@ -48,7 +48,7 @@ spec:
         - name: userHome
           value: /home/git
         - name: REVISION
-          value: ocp4.17
+          value: main
       taskRef:
         params:
           - name: kind

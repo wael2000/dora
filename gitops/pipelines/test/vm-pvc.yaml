@@ -15,7 +15,7 @@ spec:
     - name: callback_url
       value: 'http://dashboard-hub-ns.apps.cluster-wnzh7.wnzh7.sandbox1805.opentlc.com/department/provision/commit'
     - name: REVISION
-      value: ocp4.17
+      value: main
   pipelineRef:
     name: provisioning-pipeline
   taskRunTemplate:

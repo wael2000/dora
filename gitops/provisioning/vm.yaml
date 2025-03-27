@@ -22,7 +22,7 @@ spec:
       sources:
         - repositoryType: git
           repoURL: https://github.com/wael2000/dora
-          targetRevision: ocp4.17
+          targetRevision: main
           path: gitops/provisioning/vm
       destination:
         namespace: DEPARTMENT
