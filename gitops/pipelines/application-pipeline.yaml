@@ -16,7 +16,7 @@ spec:
     - default: dc
       name: location
       type: string
-    - default: 'http://dashboard-hub-ns.apps.cluster-wnzh7.wnzh7.sandbox1805.opentlc.com/department/deploy/commit'
+    - default: 'http://dashboard-hub-ns.apps.CLUSTER_URL/department/deploy/commit'
       name: callback_url
       type: string
   tasks:

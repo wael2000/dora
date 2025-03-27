@@ -19,7 +19,7 @@ spec:
       type: string      
     - name: callback_url
       type: string
-      default: "http://dashboard-hub-ns.cluster-wnzh7.wnzh7.sandbox1805.opentlc.com/provision/commit"
+      default: "http://dashboard-hub-ns.CLUSTER_URL/provision/commit"
   workspaces:
     - name: workspace
   steps:
