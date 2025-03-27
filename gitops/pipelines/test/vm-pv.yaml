@@ -1,0 +1,38 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: provisioning-pipeline-vm
+spec:
+  params:
+    - name: action
+      value: create
+    - name: department
+      value: pss
+    - name: location
+      value: dc
+    - name: type
+      value: vm
+    - name: callback_url
+      value: 'http://dashboard-hub-ns.apps.cluster-wnzh7.wnzh7.sandbox1805.opentlc.com/department/provision/commit'
+    - name: REVISION
+      value: ocp4.17
+  pipelineRef:
+    name: provisioning-pipeline
+  taskRunTemplate:
+    serviceAccountName: pipeline
+  timeouts:
+    pipeline: 1h0m0s
+  workspaces:
+    - name: source
+      volumeClaimTemplate:
+        metadata:
+          creationTimestamp: null
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+          storageClassName: gp3-csi
+          volumeMode: Filesystem
+        status: {}

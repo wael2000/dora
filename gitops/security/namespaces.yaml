@@ -1,0 +1,67 @@
+# Dev Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+  labels:
+    usecase: rbac
+spec: {}
+---
+# Dev Namespace Resource Qouta
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: dev-resource-quota
+  namespace: dev
+spec:
+  hard:
+    pods: '4'
+    requests.cpu: '1'
+    requests.memory: 2Gi
+    limits.cpu: '4'
+    limits.memory: 8Gi
+---
+# Sit Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sit
+  labels:
+    usecase: rbac  
+spec: {}
+---
+# Sit Namespace Resource Qouta
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: sit-resource-quota
+  namespace: sit
+spec:
+  hard:
+    pods: '5'
+    requests.cpu: '1'
+    requests.memory: 2Gi
+    limits.cpu: '2'
+    limits.memory: 4Gi
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prod
+  labels:
+    usecase: rbac  
+spec: {}
+---
+# Sit Namespace Resource Qouta
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: prd-resource-quota
+  namespace: prod
+spec:
+  hard:
+    pods: '5'
+    requests.cpu: '1'
+    requests.memory: 2Gi
+    limits.cpu: '4'
+    limits.memory: 8Gi

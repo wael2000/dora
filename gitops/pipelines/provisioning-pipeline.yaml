@@ -1,0 +1,294 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: provisioning-pipeline
+spec:
+  params:
+    - default: create
+      description: create or delete
+      name: action
+      type: string
+    - default: pss
+      name: department
+      type: string
+    - default: dc
+      name: location
+      type: string
+    - default: ns
+      name: type
+      type: string
+    - default: 'http://dashboard-hub-ns.apps.cluster-wnzh7.wnzh7.sandbox1805.opentlc.com/department/provision/commit'
+      name: callback_url
+      type: string
+    - default: main
+      name: REVISION
+      type: string
+  tasks:
+    - name: git-clone
+      params:
+        - name: refspec
+          value: ''
+        - name: submodules
+          value: 'true'
+        - name: depth
+          value: '1'
+        - name: sslVerify
+          value: 'true'
+        - name: crtFileName
+          value: ca-bundle.crt
+        - name: subdirectory
+          value: ''
+        - name: sparseCheckoutDirectories
+          value: ''
+        - name: deleteExisting
+          value: 'true'
+        - name: httpProxy
+          value: ''
+        - name: httpsProxy
+          value: ''
+        - name: noProxy
+          value: ''
+        - name: verbose
+          value: 'true'
+        - name: gitInitImage
+          value: 'registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel8@sha256:868966ef9d4b54952d8a74eb83bba40eb1f52c0148994fa704efd0e3797c61c5'
+        - name: userHome
+          value: /home/git
+        - name: URL
+          value: 'https://github.com/wael2000/dora'
+        - name: REVISION
+          value: $(params.REVISION)
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: git-clone
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+      workspaces:
+        - name: output
+          workspace: source
+    - name: ns-config
+      params:
+        - name: SCRIPT
+          value: sed -e 's/DEPARTMENT/$(params.department)/g' -e 's/LOCATION/$(params.location)/g' gitops/provisioning/ns.yaml | oc $(params.action) -f - -n openshift-gitops
+        - name: VERSION
+          value: latest
+      runAfter:
+        - git-clone
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+      when:
+        - input: $(params.type)
+          operator: in
+          values:
+            - ns
+      workspaces:
+        - name: manifest_dir
+          workspace: source
+    - name: cluster-ns
+      params:
+        - name: SCRIPT
+          value: oc new-project $(params.department)-cluster
+        - name: VERSION
+          value: latest
+      runAfter:
+        - git-clone
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+      when:
+        - input: $(params.type)
+          operator: in
+          values:
+            - cluster
+      workspaces:
+        - name: manifest_dir
+          workspace: source
+    - name: callback
+      params:
+        - name: department
+          value: $(params.department)
+        - name: callback_url
+          value: $(params.callback_url)
+        - name: action
+          value: $(params.action)
+        - name: location
+          value: $(params.location)
+      runAfter:
+        - cluster
+        - app-placement
+        - provision-vms
+      taskRef:
+        kind: Task
+        name: provisioning-callback
+      workspaces:
+        - name: workspace
+          workspace: source
+    - name: secrets
+      params:
+        - name: SCRIPT
+          value: 'oc get secret cluster-secrets -n hub-ns -o jsonpath=''{.data.secrets}'' | base64 --decode | sed -e ''s/NAMESPACE/$(params.department)/g'' | oc create -f - -n $(params.department)-cluster'
+        - name: VERSION
+          value: latest
+      runAfter:
+        - cluster-ns
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+      when:
+        - input: $(params.type)
+          operator: in
+          values:
+            - cluster
+      workspaces:
+        - name: manifest_dir
+          workspace: source
+    - name: cluster
+      params:
+        - name: SCRIPT
+          value: 'oc get secret cluster-secrets -n hub-ns -o jsonpath=''{.data.cluster}'' | base64 --decode | sed -e ''s/NAMESPACE/$(params.department)/g'' | oc create -f - -n $(params.department)-cluster'
+        - name: VERSION
+          value: latest
+      runAfter:
+        - cluster-set
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+      when:
+        - input: $(params.type)
+          operator: in
+          values:
+            - cluster
+      workspaces:
+        - name: manifest_dir
+          workspace: source
+    - name: cluster-set
+      params:
+        - name: SCRIPT
+          value: 'oc get secret cluster-secrets -n hub-ns -o jsonpath=''{.data.cluster-set}'' | base64 --decode | sed -e ''s/NAMESPACE/$(params.department)/g'' | oc create -f - '
+        - name: VERSION
+          value: latest
+      runAfter:
+        - secrets
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+      when:
+        - input: $(params.type)
+          operator: in
+          values:
+            - cluster
+      workspaces:
+        - name: manifest_dir
+          workspace: source
+    - name: db-config
+      params:
+        - name: SCRIPT
+          value: sed -e 's/DEPARTMENT/$(params.department)/g' -e 's/LOCATION/$(params.location)/g' gitops/db/applicationset-db.yaml | oc $(params.action) -f - -n openshift-gitops
+        - name: VERSION
+          value: latest
+      runAfter:
+        - ns-config
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+      when:
+        - input: $(params.type)
+          operator: in
+          values:
+            - ns
+      workspaces:
+        - name: manifest_dir
+          workspace: source
+    - name: app-placement
+      params:
+        - name: SCRIPT
+          value: 'kubectl patch placement $(params.department)-placement --type "json" -p ''[{"op":"add","path":"/spec/predicates/0/requiredClusterSelector/labelSelector/matchExpressions/0/values/1","value":"$(params.location)"}]'' -n openshift-gitops'
+        - name: VERSION
+          value: latest
+      runAfter:
+        - db-config
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+      when:
+        - input: $(params.type)
+          operator: in
+          values:
+            - ns
+      workspaces:
+        - name: manifest_dir
+          workspace: source
+    - name: provision-vms
+      params:
+        - name: SCRIPT
+          value: sed -e 's/DEPARTMENT/$(params.department)/g' gitops/provisioning/vm.yaml | oc $(params.action) -f - -n openshift-gitops
+        - name: VERSION
+          value: latest
+      runAfter:
+        - git-clone
+      taskRef:
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+      when:
+        - input: $(params.type)
+          operator: in
+          values:
+            - vm
+      workspaces:
+        - name: manifest_dir
+          workspace: source
+  workspaces:
+    - name: source

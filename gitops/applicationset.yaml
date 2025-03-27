@@ -1,0 +1,45 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: DEPARTMENT-SYSTEM
+  namespace: openshift-gitops
+spec:
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: DEPARTMENT-placement
+        requeueAfterSeconds: 180
+  template:
+    metadata:
+      name: DEPARTMENT-SYSTEM-{{name}}
+      labels:
+        velero.io/exclude-from-backup: "true"
+    spec:
+      project: default
+      sources:
+        - repositoryType: git
+          repoURL: https://github.com/wael2000/dora.git
+          targetRevision: main
+          path: gitops/apps/LOCATION/DEPARTMENT/SYSTEM
+      destination:
+        namespace: DEPARTMENT
+        server: "{{server}}"
+      syncPolicy:
+        automated:
+          selfHeal: true
+          prune: true
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true
+        ignoreDifferences:
+          # Exclude the entire Service object from sync
+          - group: ""
+            kind: Service
+            name: SYSTEM-apis
+            namespace: DEPARTMENT
+          - group: ""
+            kind: Service
+            name: SYSTEM-ui
+            namespace: DEPARTMENT

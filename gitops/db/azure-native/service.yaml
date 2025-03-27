@@ -1,0 +1,7 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: azure-postgresql-service
+spec:
+  type: ExternalName
+  externalName: postgresqlserver-fsi.postgres.database.azure.com

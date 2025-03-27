@@ -1,0 +1,11 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  name: hub-apis-token
+  namespace: hub-ns
+  annotations:
+    kubernetes.io/service-account.name: hub-apis
+data:
+  # get hub-api sa token
+  token: 
+type: kubernetes.io/service-account-token

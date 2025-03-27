@@ -1,0 +1,14 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: application-trigger-binding
+spec:
+  params:
+    - name: action
+      value: $(body.action)
+    - name: department
+      value: $(body.department)
+    - name: location
+      value: $(body.location)
+    - name: system
+      value: $(body.system)

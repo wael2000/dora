@@ -1,0 +1,156 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: azure-postgresql
+spec:
+  params:
+    - default: deploy
+      description: action
+      name: action
+      type: string
+    - default: pss
+      description: Department
+      name: department
+      type: string
+  tasks:
+    - name: git-clone
+      params:
+        - name: url
+          value: 'https://github.com/wael2000/dora'
+        - name: revision
+          value: main
+        - name: refspec
+          value: ''
+        - name: submodules
+          value: 'true'
+        - name: depth
+          value: '1'
+        - name: sslVerify
+          value: 'true'
+        - name: crtFileName
+          value: ca-bundle.crt
+        - name: subdirectory
+          value: ''
+        - name: sparseCheckoutDirectories
+          value: ''
+        - name: deleteExisting
+          value: 'true'
+        - name: httpProxy
+          value: ''
+        - name: httpsProxy
+          value: ''
+        - name: noProxy
+          value: ''
+        - name: verbose
+          value: 'true'
+        - name: gitInitImage
+          value: 'registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel8@sha256:9b14f52b21d29d8d83ea4c0e78623debc954f1a732d2be6d1a7269fbba23b1a4'
+        - name: userHome
+          value: /home/git
+      taskRef:
+        kind: ClusterTask
+        name: git-clone
+      when:
+        - input: $(params.action)
+          operator: in
+          values:
+            - deploy
+      workspaces:
+        - name: output
+          workspace: source
+    - name: deploy-azure-service
+      params:
+        - name: SCRIPT
+          value: sed -e 's/DEPARTMENT/$(params.department)/g' gitops/db/azure-db-application.yaml | oc create -f - -n openshift-gitops
+        - name: VERSION
+          value: latest
+      runAfter:
+        - git-clone
+      taskRef:
+        kind: ClusterTask
+        name: openshift-client
+      when:
+        - input: $(params.action)
+          operator: in
+          values:
+            - deploy
+      workspaces:
+        - name: manifest-dir
+          workspace: source
+    - name: add-ns-to-gitops
+      params:
+        - name: SCRIPT
+          #value: oc label ns $(params.department)-azure argocd.argoproj.io/managed-by=openshift-gitops --overwrite
+          value: oc label ns azure-native argocd.argoproj.io/managed-by=openshift-gitops --overwrite
+        - name: VERSION
+          value: latest
+      runAfter:
+        - deploy-azure-service
+      taskRef:
+        kind: ClusterTask
+        name: openshift-client
+  workspaces:
+    - name: source
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: azure-trigger-binding
+spec:
+  params:
+    - name: battalion
+      value: $(body.battalion)
+    - name: action
+      value: $(body.action)
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: azure-trigger-template
+spec:
+  params:
+    - description: battalion name
+      name: battalion
+    - description: action
+      name: action
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: azure-pipeline-$(tt.params.battalion)-
+      spec:
+        params:
+          - name: battalion
+            value: $(tt.params.battalion)
+          - name: action
+            value: $(tt.params.action)
+        pipelineRef:
+          name: azure-postgresql
+        serviceAccountName: pipeline
+        workspaces:
+          - name: source
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 64Mi
+                storageClassName: gp3-csi
+                volumeMode: Filesystem
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: azure-event-listener
+spec:
+  namespaceSelector: {}
+  resources: {}
+  serviceAccountName: pipeline
+  triggers:
+    - bindings:
+        - kind: TriggerBinding
+          ref: azure-trigger-binding
+      name: battalion-trigger
+      template:
+        ref: azure-trigger-template

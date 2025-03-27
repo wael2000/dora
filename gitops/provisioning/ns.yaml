@@ -1,0 +1,56 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: LOCATION-DEPARTMENT
+  namespace: openshift-gitops
+spec:
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: LOCATION-placement
+        requeueAfterSeconds: 180
+  template:
+    metadata:
+      name: LOCATION-DEPARTMENT
+      labels:
+        velero.io/exclude-from-backup: "true"
+    spec:
+      project: default
+      sources:
+        - repositoryType: git
+          repoURL: https://github.com/wael2000/dora
+          targetRevision: main
+          path: gitops/provisioning/ns
+      destination:
+        namespace: DEPARTMENT
+        server: "{{server}}"
+      syncPolicy:
+        automated:
+          selfHeal: true
+          prune: true
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true
+#--- we dont need it
+#--- All placement objects are created upfront using gitops/placement/apps-placement.yaml
+#apiVersion: cluster.open-cluster-management.io/v1beta1
+#kind: Placement
+#metadata:
+#  name: DEPARTMENT-placement
+#  namespace: openshift-gitops
+#spec:
+#  clusterSets:
+#    - default
+#  predicates:
+#    - requiredClusterSelector:
+#        labelSelector:
+#          matchLabels:
+#            provider: dc
+#        claimSelector:
+#          matchExpressions:
+#            - key: platform.open-cluster-management.io
+#              operator: In
+#              values:
+#                - aws    

@@ -1,0 +1,55 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: apis
+  labels:
+    app: apis
+    app.kubernetes.io/part-of: system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apis
+  template:
+    metadata:
+      labels:
+        app: apis
+    spec:
+      containers:
+        - name: apis
+          image: 'quay.io/wael2000/fsi-apis:latest'
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          resources:
+            limits:
+              cpu: '1'
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 128Mi              
+          env:
+            - name: location
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: location
+            - name: department
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: department
+            - name: system
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: system
+          imagePullPolicy: Always
+      restartPolicy: Always
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

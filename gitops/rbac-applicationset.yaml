@@ -1,0 +1,36 @@
+# deploy Dashboard only on DC
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: rbac-applicationset
+  namespace: openshift-gitops
+spec:
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: dc-placement
+        requeueAfterSeconds: 180
+  template:
+    metadata:
+      name: security-{{name}}
+      labels:
+        velero.io/exclude-from-backup: "true"
+    spec:
+      destination:
+        namespace: hub-ns
+        server: "{{server}}"
+      project: default
+      sources:
+        - path: gitops/security
+          repoURL: https://github.com/wael2000/dora
+          targetRevision: ocp4.17
+          repositoryType: git
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true

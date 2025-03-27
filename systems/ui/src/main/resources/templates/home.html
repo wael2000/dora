@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DORA</title>
+    <!-- ================= Favicon ================== -->
+    <!-- Standard -->
+    <link rel="shortcut icon" href="http://placehold.it/64.png/000/fff">
+    <!-- Retina iPad Touch Icon-->
+    <link rel="apple-touch-icon" sizes="144x144" href="http://placehold.it/144.png/000/fff">
+    <!-- Retina iPhone Touch Icon-->
+    <link rel="apple-touch-icon" sizes="114x114" href="http://placehold.it/114.png/000/fff">
+    <!-- Standard iPad Touch Icon-->
+    <link rel="apple-touch-icon" sizes="72x72" href="http://placehold.it/72.png/000/fff">
+    <!-- Standard iPhone Touch Icon-->
+    <link rel="apple-touch-icon" sizes="57x57" href="http://placehold.it/57.png/000/fff">
+    <!-- Styles -->
+    <link href="assets/css/lib/calendar2/pignose.calendar.min.css" rel="stylesheet">
+    <link href="assets/css/lib/font-awesome.min.css" rel="stylesheet">
+    <link href="assets/css/lib/themify-icons.css" rel="stylesheet">
+    <link href="assets/css/lib/owl.carousel.min.css" rel="stylesheet" />
+    <link href="assets/css/lib/owl.theme.default.min.css" rel="stylesheet" />
+    <link href="assets/css/lib/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/lib/helper.css" rel="stylesheet">
+    <link href="assets/css/style.css" rel="stylesheet">
+</head>
+
+<body ng-app="SystemManagement" ng-controller="SystemManagementController">
+
+    <div class="content-wrap">
+        <div class="container-fluid">
+            <div class="row header">
+                    <div class="col-md-1"> 
+                        <img class="pull-left logo-img" src="img/redhat.png" alt="" />
+                    </div>
+                    <div class="col-md-11">
+                        <h5>Digital Operational Resilience Act</h5>
+                        <h4> <span class="bg-primary round-widget"> {{ system }} </span> 
+                            <span class="user-avatar round-widget"> -- APIs --> </span>
+                            <span class="bg-success round-widget"> {{apilocation}} </span> 
+                            <span class="user-avatar round-widget"> -- DB --> </span>
+                            <span class="bg-danger round-widget"> {{dblocation}} </span> 
+                        </h4>
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- main lots -->
+    <div class="content-wrap">
+        <div class="main">
+            <div class="container-fluid">  
+                <section id="main-content">
+                    <!-- # row app lot grid -->
+                    <div class="row" class="grid">
+                        <div class="col-lg-10 col-md-10 col-sm-10" ng-repeat="app in apps | orderBy:'-id'" on-finish-render="callRenderFinished()" on-start-render="callRenderStarted()">
+                            <div class="card">
+                                <div class="card-title"><h4> {{ department }} </h4></div>
+                                <div class="stat-widget-one">
+                                    <a href="#"><img class="align-self-center rounded-circle mr-3" style="width:85px; height:85px;" alt="" src="images/{{ app.departmentId}}.png"></a>
+                                    <div class="stat-content dib">
+                                        <div class="stat-text">{{ app.description }} </div>
+                                        <div class="stat-digit">{{ app.name }} </div>                                              
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /# row app lot grid  -->
+                </section>
+            </div>
+            <!-- # row -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="footer">
+                        <p>2024 © Red Hat EMEA. - <a href="#">www.redhat.com</a></p>
+                    </div>
+                </div>
+            </div>
+            <!-- /# row -->
+            </div>
+        </div>
+    </div>
+
+    <!-- jquery vendor -->
+    <script src="assets/js/lib/jquery.min.js"></script>
+    <script src="assets/js/lib/jquery.nanoscroller.min.js"></script>
+    <!-- nano scroller -->
+    
+    <script src="assets/js/lib/bootstrap.min.js"></script>
+    <script src="assets/js/scripts.js"></script>
+    <!-- bootstrap -->
+
+
+
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/styles.css"/>
+    <link rel="stylesheet" href="css/amsify.select.css"/>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    
+    <script type="text/javascript"> 
+        var distance;
+        var app = angular.module("SystemManagement", []);
+
+        app.directive('onFinishRender', ['$timeout', '$parse', function ($timeout, $parse) {
+        return {
+            restrict: 'A',
+            link: function (scope, element, attr) {
+                if (scope.$last === true) {
+                    $timeout(function () {
+                        scope.$emit('ngRepeatFinished');
+                        if ( !! attr.onFinishRender) {
+                            $parse(attr.onFinishRender)(scope);
+                        }
+                    });
+                }
+                if (!!attr.onStartRender) {
+                    if (scope.$first === true) {
+                        $timeout(function () {
+                            scope.$emit('ngRepeatStarted');
+                            if ( !! attr.onStartRender) {
+                                $parse(attr.onStartRender)(scope);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+        }]);
+
+        app.controller("SystemManagementController", function ($scope, $http) {
+            $scope.apps = [];
+            $scope.system = "";
+            $scope.apilocation = "";
+            $scope.dblocation = "";
+            $scope.department = "";
+            _refreshPageData();
+            function _refreshPageData() {
+                var method = "";
+                var url = "";
+                var data = {};
+                method = "GET";
+                url = '/all';
+                $http({
+                    method: method,
+                    url: url,
+                    data: angular.toJson(data),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin' : '*'
+                    }
+                }).then(function successCallback(response) {
+                    $scope.apps = response.data.apps;
+                    $scope.system = response.data.system;
+                    $scope.apilocation = response.data.apilocation;
+                    $scope.dblocation = response.data.dblocation;
+                    $scope.department = response.data.department;
+                }, function errorCallback(response) {
+                    console.log(response.statusText);
+                });
+            } 
+
+            $scope.callRenderFinished = function () {
+            }
+            $scope.callRenderStarted = function () {
+            }
+            $scope.$on('ngRepeatFinished', function (ngRepeatFinishedEvent) {
+            });
+            $scope.$on('ngRepeatStarted', function (ngRepeatStartedEvent) {
+            });
+        });
+        
+    </script>
+</body>
+</html>

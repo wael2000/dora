@@ -1,0 +1,29 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: dashboard
+  labels:
+    app: dashboard
+spec:
+  to:
+    kind: Service
+    name: dashboard
+    weight: 100
+  port:
+    targetPort: 8080-tcp
+  wildcardPolicy: None
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: dashboard-ui
+  labels:
+    app: dashboard-ui
+spec:
+  to:
+    kind: Service
+    name: dashboard-ui
+    weight: 100
+  port:
+    targetPort: 8080-tcp
+  wildcardPolicy: None

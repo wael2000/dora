@@ -1,0 +1,87 @@
+# you need to change baseDomain with ENV [Base DNS Domain]
+apiVersion: hive.openshift.io/v1
+kind: ClusterDeployment
+metadata:
+  name: NAMESPACE-cluster
+  namespace: NAMESPACE-cluster
+  labels:
+    cloud: AWS
+    region: us-east-1
+    vendor: OpenShift
+    cluster.open-cluster-management.io/clusterset: default
+spec:
+  baseDomain: BASE_DOMAIN
+  clusterName: NAMESPACE-cluster
+  controlPlaneConfig:
+    servingCertificates: {}
+  installAttemptsLimit: 1
+  installed: false
+  platform:
+    aws:
+      credentialsSecretRef:
+        name: NAMESPACE-cluster-creds
+      region: us-east-1
+  provisioning:
+    installConfigSecretRef:
+      name: NAMESPACE-cluster-install-config
+    sshPrivateKeySecretRef:
+      name: NAMESPACE-cluster-ssh-private-key
+    imageSetRef:
+      name: img4.15.16-multi-appsub
+  pullSecretRef:
+    name: NAMESPACE-cluster-pull-secret
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  name: NAMESPACE-cluster
+  labels:
+    name: NAMESPACE-cluster
+    cloud: Amazon
+    region: us-east-1
+    vendor: OpenShift
+    cluster.open-cluster-management.io/clusterset: NAMESPACE-cluster-set
+    env: dc
+spec:
+  hubAcceptsClient: true
+  leaseDurationSeconds: 600
+---
+apiVersion: hive.openshift.io/v1
+kind: MachinePool
+metadata:
+  name: NAMESPACE-cluster-worker
+  namespace: NAMESPACE-cluster
+spec:
+  name: worker
+  clusterDeploymentRef:
+    name: NAMESPACE-cluster
+  platform:
+    aws:
+      rootVolume:
+        iops: 2000
+        size: 100
+        type: io1
+      type: m5.xlarge
+  replicas: 0
+---
+apiVersion: agent.open-cluster-management.io/v1
+kind: KlusterletAddonConfig
+metadata:
+  name: NAMESPACE-cluster
+  namespace: NAMESPACE-cluster
+spec:
+  clusterName: NAMESPACE-cluster
+  clusterNamespace: NAMESPACE-cluster
+  clusterLabels:
+    cloud: Amazon
+    vendor: OpenShift
+  applicationManager:
+    enabled: true
+  policyController:
+    enabled: true
+  searchCollector:
+    enabled: true
+  certPolicyController:
+    enabled: true
+  iamPolicyController:
+    enabled: true

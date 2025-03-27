@@ -1,0 +1,54 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-config
+  namespace: azure-native
+spec:
+  parallelism: 1    
+  completions: 1    
+  activeDeadlineSeconds: 1800 
+  backoffLimit: 6   
+  template:         
+    metadata:
+      name: db-config
+    spec:
+      volumes:
+        - name: data-volume
+          configMap:
+            name: db-config
+            defaultMode: 420    
+      containers:
+      - name: init-build-db
+        image: 'postgres:14'
+        command: ["/bin/sh","-c"]
+        args: ["sleep 10; psql postgresql://postgres%40postgresqlserver-fsi:C0mplexP%40ssw0rd@azure-postgresql-service/fsi -f /etc/dbvolume/build_tables.sql"]
+        resources: {}
+        volumeMounts:
+          - name: data-volume
+            mountPath: /etc/dbvolume
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        imagePullPolicy: IfNotPresent
+      - name: init-populate-db
+        image: 'postgres:14'
+        command: ["/bin/sh","-c"]
+        args: ["sleep 20; psql postgresql://postgres%40postgresqlserver-fsi:C0mplexP%40ssw0rd@azure-postgresql-service/fsi -f /etc/dbvolume/data.sql"]
+        resources: {}
+        volumeMounts:
+          - name: data-volume
+            mountPath: /etc/dbvolume
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        imagePullPolicy: IfNotPresent
+      - name: init-populate-config
+        image: 'postgres:14'
+        command: ["/bin/sh","-c"]
+        args: ["sleep 20; psql postgresql://postgres%40postgresqlserver-fsi:C0mplexP%40ssw0rd@azure-postgresql-service/fsi -f /etc/dbvolume/config.sql"]
+        resources: {}
+        volumeMounts:
+          - name: data-volume
+            mountPath: /etc/dbvolume
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        imagePullPolicy: IfNotPresent        
+      restartPolicy: OnFailure  

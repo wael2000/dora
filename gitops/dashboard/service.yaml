@@ -1,0 +1,62 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: dashboard
+  labels:
+    app: dashboard
+spec:
+  ipFamilies:
+    - IPv4
+  ports:
+    - name: 8080-tcp
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  internalTrafficPolicy: Cluster
+  type: ClusterIP
+  ipFamilyPolicy: SingleStack
+  sessionAffinity: None
+  selector:
+    app: dashboard
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: dashboard-ui
+  labels:
+    app: dashboard-ui
+spec:
+  ipFamilies:
+    - IPv4
+  ports:
+    - name: 8080-tcp
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  internalTrafficPolicy: Cluster
+  type: ClusterIP
+  ipFamilyPolicy: SingleStack
+  sessionAffinity: None
+  selector:
+    app: dashboard-ui
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: postgresql
+  labels:
+    rhsi: included  
+spec:
+  ipFamilies:
+    - IPv4
+  ports:
+    - name: postgresql
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+  internalTrafficPolicy: Cluster
+  type: ClusterIP
+  ipFamilyPolicy: SingleStack
+  sessionAffinity: None
+  selector:
+    name: postgresql

@@ -1,0 +1,26 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: deployment-callback
+spec:
+  description: Send deployment callback
+  params:
+    - default: 'rtgs'
+      description: system
+      name: system
+      type: string
+    - default: 'true'
+      name: status
+      type: string      
+    - name: callback_url
+      type: string
+      default: "http://dashboard-hub-ns.apps.cluster-wnzh7.wnzh7.sandbox1805.opentlc.com/department/deploy/commit"
+  workspaces:
+    - name: workspace
+  steps:
+    - name: configure
+      image: registry.access.redhat.com/ubi8/ubi-minimal
+      script: |
+        #!/usr/bin/env bash
+
+        curl -XPOST -d '{"name": "$(params.system)", "deployed" : $(params.status)}' $(params.callback_url) -H 'Content-Type: application/json'

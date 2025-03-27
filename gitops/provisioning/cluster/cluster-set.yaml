@@ -1,0 +1,13 @@
+apiVersion: cluster.open-cluster-management.io/v1beta2
+kind: ManagedClusterSet
+metadata:
+  annotations:
+    cluster.open-cluster-management.io/submariner-broker-ns: NAMESPACE-cluster-set-broker
+  finalizers:
+  - cluster.open-cluster-management.io/managedclusterset-clusterrole
+  - cluster.open-cluster-management.io/submariner-cleanup
+  - cluster.open-cluster-management.io/submariner-cleanup
+  name: NAMESPACE-cluster-set
+spec:
+  clusterSelector:
+    selectorType: ExclusiveClusterSetLabel

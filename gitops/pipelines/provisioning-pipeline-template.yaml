@@ -1,0 +1,43 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: provisioning-trigger-template
+spec:
+  params:
+    - name: action
+    - name: department
+    - name: location
+    - name: type
+    #- name: callback_url
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: provisioning-pipeline-$(tt.params.department)-
+      spec:
+        params:
+          - name: action
+            value: $(tt.params.action)
+          - name: department
+            value: $(tt.params.department)
+          - name: location
+            value: $(tt.params.location)
+          - name: type
+            value: $(tt.params.type)
+          #- name: callback_url
+          #  value: $(tt.params.callback_url)
+        pipelineRef:
+          name: provisioning-pipeline
+        serviceAccountName: pipeline
+        workspaces:
+          - name: source
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 64Mi
+                #storageClassName: ocs-external-storagecluster-ceph-rbd
+                storageClassName: gp3-csi
+                volumeMode: Filesystem

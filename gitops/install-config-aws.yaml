@@ -1,0 +1,42 @@
+apiVersion: v1
+metadata:
+  name: aws
+baseDomain: sandbox293.opentlc.com
+controlPlane:
+  name: master
+  architecture: amd64
+  hyperthreading: Enabled
+  replicas: 1
+  platform:
+    aws:
+      rootVolume:
+        iops: 4000
+        size: 100
+        type: io1
+      type: m5.xlarge
+compute:
+  - name: worker
+    hyperthreading: Enabled
+    architecture: amd64
+    replicas: 0
+    platform:
+      aws:
+        rootVolume:
+          iops: 2000
+          size: 100
+          type: io1
+        type: m5.xlarge
+networking:
+  networkType: OVNKubernetes
+  clusterNetwork:
+    - cidr: 10.128.0.0/14
+      hostPrefix: 23
+  machineNetwork:
+    - cidr: 10.0.0.0/16
+  serviceNetwork:
+    - 172.30.0.0/16
+platform:
+  aws:
+    region: eu-west-1
+pullSecret: ''
+sshKey: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDClYXvYhXeqgDYSJrshitEViWNx5Of2FAremhE4fKW68l9tnH+rptztPIXEQYbt3v0+MNipF4Jubby9FFwgkAS7kBFC6D/4EkC2Fhf7HuGOTE5BMUCKArZLsgfbyYxjoYxRdPElzEOxd6zwzM9ZZt06LAwh1E5zvjAgqfsnwo3kQ== noname

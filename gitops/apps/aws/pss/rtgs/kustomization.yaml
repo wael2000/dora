@@ -1,0 +1,86 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../base
+patches:
+- patch: |-
+    - op: replace
+      path: /metadata/name
+      value: rtgs-apis
+    - op: replace
+      path: /metadata/labels/app
+      value: rtgs-apis
+    - op: replace
+      path: /metadata/labels/app.kubernetes.io~1part-of
+      value: rtgs
+  target:
+    name: apis
+- patch: |-
+    - op: replace
+      path: /metadata/name
+      value: rtgs-ui
+    - op: replace
+      path: /metadata/labels/app
+      value: rtgs-ui
+    - op: replace
+      path: /metadata/labels/app.kubernetes.io~1part-of
+      value: rtgs
+  target:
+    name: ui
+- patch: |-
+    - op: replace
+      path: /spec/to/name
+      value: rtgs-ui
+  target:
+    kind: Route
+    name: ui
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/env/0/value 
+      value: rtgs-apis
+    - op: replace
+      path: /spec/selector/matchLabels/app
+      value: rtgs-ui
+    - op: replace
+      path: /spec/template/metadata/labels/app
+      value: rtgs-ui
+  target:
+    kind: Deployment
+    name: ui
+- patch: |-
+    - op: replace
+      path: /spec/selector/matchLabels/app
+      value: rtgs-apis
+    - op: replace
+      path: /spec/template/metadata/labels/app
+      value: rtgs-apis            
+  target:
+    kind: Deployment
+    name: apis
+- patch: |-
+    - op: replace
+      path: /spec/selector/app
+      value: rtgs-apis
+  target:
+    kind: Service
+    name: apis
+- patch: |-
+    - op: replace
+      path: /spec/selector/app
+      value: rtgs-apis-rhsi
+  target:
+    kind: Service
+    name: apis-rhsi
+- patch: |-
+    - op: replace
+      path: /spec/selector/app
+      value: rtgs-ui
+  target:
+    kind: Service
+    name: ui
+configMapGenerator:
+- name: app-config
+  behavior: merge
+  literals:
+  - system=RTGS - Real-Time Gross Settlement System
+  - app_name=rtgs

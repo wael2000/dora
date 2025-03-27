@@ -1,0 +1,47 @@
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  name: baremetal
+  labels:
+    name: baremetal
+    cloud: auto-detect
+    vendor: auto-detect
+    cluster.open-cluster-management.io/clusterset: default
+    provider: bm
+  annotations: {}
+spec:
+  hubAcceptsClient: true
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: auto-import-secret
+  namespace: baremetal
+stringData:
+  autoImportRetry: "2"
+  token: XYZ
+  server: https://api.cluster-b6dlv.dynamic.redhatworkshops.io:6443
+type: Opaque
+---
+apiVersion: agent.open-cluster-management.io/v1
+kind: KlusterletAddonConfig
+metadata:
+  name: baremetal
+  namespace: baremetal
+spec:
+  clusterName: baremetal
+  clusterNamespace: baremetal
+  clusterLabels:
+    name: baremetal
+    cloud: auto-detect
+    vendor: auto-detect
+    cluster.open-cluster-management.io/clusterset: default
+    provider: bm
+  applicationManager:
+    enabled: true
+  policyController:
+    enabled: true
+  searchCollector:
+    enabled: true
+  certPolicyController:
+    enabled: true

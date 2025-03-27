@@ -1,0 +1,38 @@
+# resourceGroup need to be replaces with RG NAME
+apiVersion: azure.microsoft.com/v1alpha2
+kind: PostgreSQLServer
+metadata:
+  name: postgresqlserver-fsi
+spec:
+  location: eastus
+  resourceGroup: openenv-wjz8t
+  serverVersion: "10"
+  sslEnforcement: Enabled
+  replicaProperties: {}
+  sku:
+    name: B_Gen5_2
+    tier: Basic
+    family: Gen5
+    size: "51200"
+    capacity: 2
+  # Use the field below to optionally specify a different keyvault 
+  # to store the server admin credential secrets in
+  #keyVaultToStoreSecrets: asoSecretKeyVault
+---
+apiVersion: azure.microsoft.com/v1alpha1
+kind: PostgreSQLDatabase
+metadata:
+  name: fsi
+spec:
+  resourceGroup: openenv-wjz8t
+  server: postgresqlserver-fsi
+---
+apiVersion: azure.microsoft.com/v1alpha1
+kind: PostgreSQLFirewallRule
+metadata:
+  name: postgresqlfirewallrule-fsi
+spec:
+  resourceGroup: openenv-wjz8t
+  server: postgresqlserver-fsi
+  startIpAddress: 0.0.0.0
+  endIpAddress: 255.255.255.255

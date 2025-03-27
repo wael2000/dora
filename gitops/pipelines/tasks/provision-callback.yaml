@@ -1,0 +1,31 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: provisioning-callback
+spec:
+  description: Send Provisioning callback
+  params:
+    - default: 'pss'
+      description: department
+      name: department
+      type: string
+    - default: create
+      description: action
+      name: action
+      type: string
+    - default: dc
+      description: location
+      name: location
+      type: string      
+    - name: callback_url
+      type: string
+      default: "http://dashboard-hub-ns.cluster-wnzh7.wnzh7.sandbox1805.opentlc.com/provision/commit"
+  workspaces:
+    - name: workspace
+  steps:
+    - name: configure
+      image: registry.access.redhat.com/ubi8/ubi-minimal
+      script: |
+        #!/usr/bin/env bash
+
+        curl -XPOST -d '{"name": "$(params.department)", "location": "$(params.location)", "action": "$(params.action)"}' $(params.callback_url) -H 'Content-Type: application/json'

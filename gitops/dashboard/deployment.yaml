@@ -1,0 +1,119 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: dashboard
+  labels:
+    app: dashboard
+    app.kubernetes.io/part-of: dashboard-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard
+  template:
+    metadata:
+      labels:
+        app: dashboard
+    spec:
+      containers:
+        - name: dashboard
+          image: 'quay.io/wael2000/dashboard:latest'
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+            - containerPort: 8443
+              protocol: TCP
+          env:
+            - name: pipeline.el
+              valueFrom:
+                configMapKeyRef:
+                  name: dashboard-config
+                  key: pipeline.el
+            - name: ops.pipeline.el
+              valueFrom:
+                configMapKeyRef:
+                  name: dashboard-config
+                  key: ops.pipeline.el
+            - name: azure.pipeline.el
+              valueFrom:
+                configMapKeyRef:
+                  name: dashboard-config
+                  key: azure.pipeline.el
+            - name: build.pipeline.el
+              valueFrom:
+                configMapKeyRef:
+                  name: dashboard-config
+                  key: build.pipeline.el
+            # you need to creat this tokem with hub-apis sa token
+            - name: ocp.token
+              valueFrom:
+                secretKeyRef:
+                  name: hub-apis-token
+                  key: token
+            - name: policy.url
+              valueFrom:
+                configMapKeyRef:
+                  name: dashboard-config
+                  key: policy.url
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: dashboard-ui
+  labels:
+    app: dashboard-ui
+    app.kubernetes.io/part-of: dashboard-app    
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard-ui
+  template:
+    metadata:
+      labels:
+        app: dashboard-ui
+    spec:
+      containers:
+        - name: dashboard-ui
+          image: 'quay.io/wael2000/dashboard-ui:latest'
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: department.url
+              valueFrom:
+                configMapKeyRef:
+                  name: dashboard-config
+                  key: department.url
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

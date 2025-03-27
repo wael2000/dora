@@ -1,0 +1,79 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../base
+patches:
+- patch: |-
+    - op: replace
+      path: /metadata/name
+      value: eft-apis
+    - op: replace
+      path: /metadata/labels/app
+      value: eft-apis
+    - op: replace
+      path: /metadata/labels/app.kubernetes.io~1part-of
+      value: eft
+  target:
+    name: apis
+- patch: |-
+    - op: replace
+      path: /metadata/name
+      value: eft-ui
+    - op: replace
+      path: /metadata/labels/app
+      value: eft-ui
+    - op: replace
+      path: /metadata/labels/app.kubernetes.io~1part-of
+      value: eft
+  target:
+    name: ui
+- patch: |-
+    - op: replace
+      path: /spec/to/name
+      value: eft-ui
+  target:
+    kind: Route
+    name: ui
+- patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/env/0/value 
+      value: eft-apis
+    - op: replace
+      path: /spec/selector/matchLabels/app
+      value: eft-ui
+    - op: replace
+      path: /spec/template/metadata/labels/app
+      value: eft-ui
+  target:
+    kind: Deployment
+    name: ui
+- patch: |-
+    - op: replace
+      path: /spec/selector/matchLabels/app
+      value: eft-apis
+    - op: replace
+      path: /spec/template/metadata/labels/app
+      value: eft-apis            
+  target:
+    kind: Deployment
+    name: apis
+- patch: |-
+    - op: replace
+      path: /spec/selector/app
+      value: eft-apis
+  target:
+    kind: Service
+    name: apis
+- patch: |-
+    - op: replace
+      path: /spec/selector/app
+      value: eft-ui
+  target:
+    kind: Service
+    name: ui
+configMapGenerator:
+- name: app-config
+  behavior: merge
+  literals:
+  - system=eft - Electronic Funds Transfer System
+  - app_name=eft

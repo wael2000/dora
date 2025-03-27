@@ -1,0 +1,43 @@
+apiVersion: v1
+metadata:
+  name: 'treasury-cluster'
+baseDomain: BASE_DOMAIN
+controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
+  name: master
+  replicas: 1
+  platform:
+    aws:
+      rootVolume:
+        iops: 4000
+        size: 100
+        type: io1
+      type: m5.xlarge
+compute:
+- hyperthreading: Enabled
+  architecture: amd64
+  name: 'worker'
+  replicas: 0
+  platform:
+    aws:
+      rootVolume:
+        iops: 2000
+        size: 100
+        type: io1
+      type: m5.xlarge
+networking:
+  networkType: OVNKubernetes
+  clusterNetwork:
+  - cidr: 10.128.0.0/14
+    hostPrefix: 23
+  machineNetwork:
+  - cidr: 10.0.0.0/16
+  serviceNetwork:
+  - 172.30.0.0/16
+platform:
+  aws:
+    region: us-east-1
+pullSecret: "" # skip, hive will inject based on it's secrets
+sshKey: |-
+    ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDJkVZi4205Q0SUPWfRLl1j5XnQGiRRS0LauFAXnCnznoKFG+2JbKk9+Ny6kVFAnqMpQPbbVCKifbYj9yOBHV4GvdHvn5/fuKCc6Zbg5MjaNw5hPkXkK9oYBxRwrOyOWoIamjdyU7VP+o8hmWC20rbaHH8YokPgbk7B1uldRO1ziw== noname

@@ -1,0 +1,173 @@
+apiVersion: policy.open-cluster-management.io/v1
+kind: Policy
+metadata:
+  name: env-check
+  namespace: openshift-gitops
+  annotations:
+    policy.open-cluster-management.io/categories: CM Configuration Management
+    policy.open-cluster-management.io/standards: NIST SP 800-53
+    policy.open-cluster-management.io/controls: CM-2 Baseline Configuration
+spec:
+  disabled: false
+  evaluationInterval:
+    compliant: 5m   # Re-evaluate every 10 minutes if compliant
+    nonCompliant: 1m # Re-evaluate every 2 minutes if non-compliant   
+  policy-templates:
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: policy-dev-namespace
+        spec:
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: Namespace
+                metadata:
+                  name: dev
+          pruneObjectBehavior: None
+          remediationAction: inform
+          severity: low
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: policy-sit-namespace
+        spec:
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: Namespace
+                metadata:
+                  name: sit
+          pruneObjectBehavior: None
+          remediationAction: inform
+          severity: medium
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: policy-prod-namespace
+        spec:
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: v1
+                kind: Namespace
+                metadata:
+                  name: prod
+          pruneObjectBehavior: None
+          remediationAction: inform
+          severity: critical
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: policy-dev-rolebinding
+        spec:
+          namespaceSelector:
+            exclude:
+              - kube-*
+            include:
+              - dev
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: rbac.authorization.k8s.io/v1
+                kind: RoleBinding
+                metadata:
+                  name: dev-admin-rb
+                roleRef:
+                  name: admin
+                  apiGroup: rbac.authorization.k8s.io
+                  kind: Role
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: rbac.authorization.k8s.io/v1
+                kind: RoleBinding
+                metadata:
+                  name: dev-view-rb
+                roleRef:
+                  name: view
+                  apiGroup: rbac.authorization.k8s.io
+                  kind: Role                  
+          pruneObjectBehavior: None
+          remediationAction: inform
+          severity: low
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: policy-sit-rolebinding
+        spec:
+          namespaceSelector:
+            exclude:
+              - kube-*
+            include:
+              - sit
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: rbac.authorization.k8s.io/v1
+                kind: RoleBinding
+                metadata:
+                  name: sit-admin-rb
+                roleRef:
+                  name: admin
+                  apiGroup: rbac.authorization.k8s.io
+                  kind: Role
+          pruneObjectBehavior: None
+          remediationAction: inform
+          severity: medium 
+    - objectDefinition:
+        apiVersion: policy.open-cluster-management.io/v1
+        kind: ConfigurationPolicy
+        metadata:
+          name: policy-prod-rolebinding
+        spec:
+          namespaceSelector:
+            exclude:
+              - kube-*
+            include:
+              - prod
+          object-templates:
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: rbac.authorization.k8s.io/v1
+                kind: RoleBinding
+                metadata:
+                  name: prod-admin-rb
+                roleRef:
+                  name: admin
+                  apiGroup: rbac.authorization.k8s.io
+                  kind: Role
+            - complianceType: musthave
+              objectDefinition:
+                apiVersion: rbac.authorization.k8s.io/v1
+                kind: RoleBinding
+                metadata:
+                  name: prod-view-rb
+                roleRef:
+                  name: view
+                  apiGroup: rbac.authorization.k8s.io
+                  kind: Role                  
+          pruneObjectBehavior: None
+          remediationAction: inform
+          severity: high          
+  remediationAction: inform
+---
+apiVersion: policy.open-cluster-management.io/v1
+kind: PlacementBinding
+metadata:
+  name: env-check-placement
+  namespace: openshift-gitops
+placementRef:
+  name: dc-placement
+  apiGroup: cluster.open-cluster-management.io
+  kind: Placement
+subjects:
+  - name: env-check
+    apiGroup: policy.open-cluster-management.io
+    kind: Policy

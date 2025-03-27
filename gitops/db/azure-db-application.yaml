@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: azure-db
+spec:
+  destination:
+    namespace: azure-native
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: gitops/db/azure-native
+    repoURL: https://github.com/wael2000/dora
+    targetRevision: main
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      prune: true
+      selfHeal: true

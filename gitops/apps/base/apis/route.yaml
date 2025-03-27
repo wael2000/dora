@@ -1,0 +1,13 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: apis
+  labels:
+    app: apis
+    app.kubernetes.io/part-of: system
+spec:
+  to:
+    kind: Service
+    name: apis
+  port:
+    targetPort: 8080-tcp

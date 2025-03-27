@@ -1,0 +1,45 @@
+apiVersion: v1
+metadata:
+  name: 'azure'
+baseDomain: redhat0.onmicrosoft.com
+controlPlane:
+  architecture: amd64
+  hyperthreading: Enabled
+  name: master
+  replicas: 1
+  platform:
+    azure:
+      osDisk:
+        diskSizeGB: 128
+      type:  Standard_D4s_v3
+compute:
+- hyperthreading: Enabled
+  architecture: amd64
+  name: 'worker'
+  replicas: 0
+  platform:
+    azure:
+      type:  Standard_D2s_v3
+      osDisk:
+        diskSizeGB: 128
+      zones:
+      - "1"
+      - "2"
+      - "3"
+networking:
+  networkType: OVNKubernetes
+  clusterNetwork:
+  - cidr: 10.128.0.0/14
+    hostPrefix: 23
+  machineNetwork:
+  - cidr: 10.0.0.0/16
+  serviceNetwork:
+  - 172.30.0.0/16
+platform:
+  azure:
+    baseDomainResourceGroupName: openenv-dlb4v
+    cloudName: AzurePublicCloud
+    region: eastus2
+pullSecret: "" # skip, hive will inject based on it's secrets
+sshKey: |-
+    ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDClYXvYhXeqgDYSJrshitEViWNx5Of2FAremhE4fKW68l9tnH+rptztPIXEQYbt3v0+MNipF4Jubby9FFwgkAS7kBFC6D/4EkC2Fhf7HuGOTE5BMUCKArZLsgfbyYxjoYxRdPElzEOxd6zwzM9ZZt06LAwh1E5zvjAgqfsnwo3kQ== noname

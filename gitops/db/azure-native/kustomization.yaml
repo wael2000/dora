@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- db-config.yaml
+- db-secret.yaml
+- postgresql-full.yaml
+- service.yaml
+configMapGenerator:
+  - name: db-config
+    behavior: merge
+    literals:
+      - config.sql=insert into config (id,key,value) values (1,'dblocation','azure-native');
+      - location=DC

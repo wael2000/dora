@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: github-oauth
+  namespace: openshift-config
+type: Opaque
+data:
+  clientSecret: <CLIENT_SECRET>
+---
+apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+  name: cluster
+spec:
+  identityProviders:
+  - name: githubidp 
+    mappingMethod: claim 
+    type: GitHub
+    github:
+      clientID: <CLIENT_ID>
+      clientSecret: 
+        name: github-oauth
+      organizations: 
+      - wael2000wael-eldoamiry

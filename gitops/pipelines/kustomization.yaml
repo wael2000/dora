@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: hub-ns
+
+resources:
+- tasks/provision-callback.yaml
+- tasks/deployment-callback.yaml
+- provisioning-pipeline.yaml
+- provisioning-pipeline-template.yaml
+- provisioning-pipeline-triggerbinding.yaml
+- provisioning-pipeline-eventlistener.yaml 
+- application-pipeline.yaml
+- application-pipeline-template.yaml
+- application-pipeline-triggerbinding.yaml
+- application-pipeline-eventlistener.yaml 
+- azure-native-pipeline.yaml

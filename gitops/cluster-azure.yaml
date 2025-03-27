@@ -1,0 +1,133 @@
+kind: Project
+apiVersion: project.openshift.io/v1
+metadata:
+  name: azure
+spec:
+  finalizers:
+    - kubernetes
+---
+apiVersion: hive.openshift.io/v1
+kind: ClusterDeployment
+metadata:
+  name: azure
+  namespace: azure
+  labels:
+    cloud: Azure
+    region: eastus2
+    vendor: OpenShift
+    cluster.open-cluster-management.io/clusterset: default
+spec:
+  baseDomain: redhat0.onmicrosoft.com
+  clusterName: azure
+  controlPlaneConfig:
+    servingCertificates: {}
+  installAttemptsLimit: 1
+  installed: false
+  platform:
+    azure:
+      baseDomainResourceGroupName: openenv-dlb4v
+      credentialsSecretRef:
+        name: azure-azure-creds
+      region: eastus2
+      cloudName: AzurePublicCloud
+  provisioning:
+    installConfigSecretRef:
+      name: azure-install-config
+    sshPrivateKeySecretRef:
+      name: azure-ssh-private-key
+    imageSetRef:
+      name: img4.15.15-multi-appsub
+  pullSecretRef:
+    name: azure-pull-secret
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  name: azure
+  labels:
+    name: azure
+    cloud: Azure
+    region: eastus2
+    vendor: OpenShift
+    cluster.open-cluster-management.io/clusterset: default
+    env: azure
+spec:
+  hubAcceptsClient: true
+---
+apiVersion: hive.openshift.io/v1
+kind: MachinePool
+metadata:
+  name: azure-worker
+  namespace: azure
+spec:
+  name: worker
+  clusterDeploymentRef:
+    name: azure
+  platform:
+    azure:
+      osDisk:
+        diskSizeGB: 128
+      type: Standard_D2s_v3
+      zones:
+        - '1'
+        - '2'
+        - '3'
+  replicas: 0
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: azure-pull-secret
+  namespace: azure
+stringData:
+  .dockerconfigjson: 
+type: kubernetes.io/dockerconfigjson
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: azure-install-config
+  namespace: azure
+type: Opaque
+data:
+  install-config.yaml: YXBpVmVyc2lvbjogdjEKbWV0YWRhdGE6CiAgbmFtZTogJ2F6dXJlJwpiYXNlRG9tYWluOiByZWRoYXQwLm9ubWljcm9zb2Z0LmNvbQpjb250cm9sUGxhbmU6CiAgYXJjaGl0ZWN0dXJlOiBhbWQ2NAogIGh5cGVydGhyZWFkaW5nOiBFbmFibGVkCiAgbmFtZTogbWFzdGVyCiAgcmVwbGljYXM6IDEKICBwbGF0Zm9ybToKICAgIGF6dXJlOgogICAgICBvc0Rpc2s6CiAgICAgICAgZGlza1NpemVHQjogMTI4CiAgICAgIHR5cGU6ICBTdGFuZGFyZF9ENHNfdjMKY29tcHV0ZToKLSBoeXBlcnRocmVhZGluZzogRW5hYmxlZAogIGFyY2hpdGVjdHVyZTogYW1kNjQKICBuYW1lOiAnd29ya2VyJwogIHJlcGxpY2FzOiAwCiAgcGxhdGZvcm06CiAgICBhenVyZToKICAgICAgdHlwZTogIFN0YW5kYXJkX0Qyc192MwogICAgICBvc0Rpc2s6CiAgICAgICAgZGlza1NpemVHQjogMTI4CiAgICAgIHpvbmVzOgogICAgICAtICIxIgogICAgICAtICIyIgogICAgICAtICIzIgpuZXR3b3JraW5nOgogIG5ldHdvcmtUeXBlOiBPVk5LdWJlcm5ldGVzCiAgY2x1c3Rlck5ldHdvcms6CiAgLSBjaWRyOiAxMC4xMjguMC4wLzE0CiAgICBob3N0UHJlZml4OiAyMwogIG1hY2hpbmVOZXR3b3JrOgogIC0gY2lkcjogMTAuMC4wLjAvMTYKICBzZXJ2aWNlTmV0d29yazoKICAtIDE3Mi4zMC4wLjAvMTYKcGxhdGZvcm06CiAgYXp1cmU6CiAgICBiYXNlRG9tYWluUmVzb3VyY2VHcm91cE5hbWU6IG9wZW5lbnYtZGxiNHYKICAgIGNsb3VkTmFtZTogQXp1cmVQdWJsaWNDbG91ZAogICAgcmVnaW9uOiBlYXN0dXMyCnB1bGxTZWNyZXQ6ICIiICMgc2tpcCwgaGl2ZSB3aWxsIGluamVjdCBiYXNlZCBvbiBpdCdzIHNlY3JldHMKc3NoS2V5OiB8LQogICAgc3NoLXJzYSBBQUFBQjNOemFDMXljMkVBQUFBREFRQUJBQUFBZ1FEQ2xZWHZZaFhlcWdEWVNKcnNoaXRFVmlXTng1T2YyRkFyZW1oRTRmS1c2OGw5dG5IK3JwdHp0UElYRVFZYnQzdjArTU5pcEY0SnViYnk5RkZ3Z2tBUzdrQkZDNkQvNEVrQzJGaGY3SHVHT1RFNUJNVUNLQXJaTHNnZmJ5WXhqb1l4UmRQRWx6RU94ZDZ6d3pNOVpadDA2TEF3aDFFNXp2akFncWZzbndvM2tRPT0gbm9uYW1lCg==
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: azure-ssh-private-key
+  namespace: azure
+stringData:
+  ssh-privatekey:
+type: Opaque
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: azure-azure-creds
+  namespace: azure
+stringData:
+  osServicePrincipal.json:
+---
+apiVersion: agent.open-cluster-management.io/v1
+kind: KlusterletAddonConfig
+metadata:
+  name: azure
+  namespace: azure
+spec:
+  clusterName: azure
+  clusterNamespace: azure
+  clusterLabels:
+    cloud: Azure
+    vendor: OpenShift
+  applicationManager:
+    enabled: true
+  policyController:
+    enabled: true
+  searchCollector:
+    enabled: true
+  certPolicyController:
+    enabled: true
+  iamPolicyController:
+    enabled: true

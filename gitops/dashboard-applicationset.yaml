@@ -1,0 +1,53 @@
+# deploy Dashboard only on DC
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: dashboard
+  namespace: openshift-gitops
+spec:
+  generators:
+    - clusterDecisionResource:
+        configMapRef: acm-placement
+        labelSelector:
+          matchLabels:
+            cluster.open-cluster-management.io/placement: dashboard-placement
+        requeueAfterSeconds: 180
+  template:
+    metadata:
+      name: dashboard-{{name}}
+      labels:
+        velero.io/exclude-from-backup: "true"
+    spec:
+      destination:
+        namespace: hub-ns
+        server: "{{server}}"
+      project: default
+      sources:
+        - path: gitops/dashboard
+          repoURL: https://github.com/wael2000/dora
+          targetRevision: ocp4.17
+          repositoryType: git
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true
+---
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: dashboard-placement
+  namespace: openshift-gitops
+spec:
+  clusterSets:
+    - default
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchExpressions:
+            - key: provider
+              operator: In
+              values:
+                - dc

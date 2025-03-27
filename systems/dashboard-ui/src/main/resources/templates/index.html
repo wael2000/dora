@@ -1,0 +1,438 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang=""> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8" lang=""> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9" lang=""> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>DORA - Digital Operational Resilience Act</title>
+    <meta name="description" content="DORA - Digital Operational Resilience Act">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="apple-touch-icon" href="apple-icon.png">
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <link rel="stylesheet" href="vendors/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="vendors/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="vendors/themify-icons/css/themify-icons.css">
+    <link rel="stylesheet" href="vendors/flag-icon-css/css/flag-icon.min.css">
+    <link rel="stylesheet" href="vendors/selectFX/css/cs-skin-elastic.css">
+    <link rel="stylesheet" href="vendors/jqvmap/dist/jqvmap.min.css">
+
+    <link rel="stylesheet" href="assets/css/style.css">
+
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800' rel='stylesheet' type='text/css'>
+
+</head>
+
+<body ng-app="DoraManagement" ng-controller="DoraManagementController">
+
+    <!-- Right Panel -->
+
+    <div id="right-panel" class="right-panel">
+
+        <!-- Header-->
+        <header id="header" class="header">
+
+            <div class="header-menu">
+
+                <div class="col-sm-6">
+                    <div class="header-left">
+                        <h5 class="menu-title"> 
+                        <img class="align-self-center rounded-circle mr-3" src="images/dora.png"/>
+                        Digital Operational Resilience Act </h5>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <!-- policy summary -->
+                    <div class="compliance-area dropdown">
+                        <a href="#" class="dropdown-toggle compliance-info" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <img class="rounded-circle compliance-avatar" src="images/grc.png" alt="GRC">
+                        </a>
+                        <div class="dropdown-menu compliance-menu">
+                            <div class="col col-sm-6">
+                            <strong>Available Policies</strong>
+                                <a ng-repeat="policy in policies" ng-if='policy.spec.disabled==true' class="nav-link" href="#" data-toggle="modal" ng-click="prePolicyModal(policy)" data-target="#policymodal">
+                                    <i class="fa fa-play"></i>
+                                    {{ policy.metadata.name }} 
+                                </a>
+                            </div>
+                            <div class="col col-sm-6">
+                            <strong>Active Policies</strong>
+                                <a ng-repeat="policy in policies" ng-if='policy.spec.disabled==false' class="nav-link" href="#" data-toggle="modal" ng-click="prePolicyModal(policy)" data-target="#policymodal">
+                                    <i class="fa fa-thumbs-{{policy.status.compliant == 'Compliant'?'up':'down'}}"></i>
+                                    {{ policy.metadata.name }} 
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="col-sm-2">
+                     <div class="compliance-area dropdown float-right">
+                        <img class="align-self-center rounded-circle mr-3" src="images/redhat.png"/>
+                     </div>
+                </div>
+
+            </div>
+
+        </header><!-- /header -->
+        <!-- Header-->
+
+
+        <div class="content mt-3">
+
+            <div class="col-xl-3 col-lg-6" ng-repeat="object in model | orderBy:'id'">
+                <section class="card">
+                    <div class="card-content department">
+
+                    <div class="twt-feed blue-bg">
+                        <div class="corner-ribon black-ribon">
+                            <i class="fa fa-{{object.status=='provisioned'?'check':'close'}}"></i>
+                        </div>
+                        
+                        <!-- menu -->
+                        <div class="department-menu dropdown">
+                            <button class="btn bg-transparent dropdown-toggle theme-toggle text-white" type="button" id="dropdownMenuButton1" data-toggle="dropdown">
+                                <i class="fa fa-cog"></i> provision
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                <div class="dropdown-menu-content">
+                                    <a ng-click="provision(object,'dc', object.dc?'delete':'create')" class="dropdown-item" href="#">DC</a>
+                                    <a ng-if="object.status=='provisioned' && object.tenantType=='ns'" ng-click="provision(object,'azure', object.azure?'delete':'create')" class="dropdown-item" href="#">Azure</a>
+                                    <a ng-if="object.status=='provisioned' && object.tenantType=='ns'" ng-click="provision(object,'aws', object.aws?'delete':'create')" class="dropdown-item" href="#">AWS</a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- menu-end -->
+
+                        <div class="fa fa-spinner wtt-mark"></div>
+                        
+                        <div class="media">
+                            <a href="#"><img class="align-self-center rounded-circle mr-3" style="width:85px; height:85px;" alt="" ng-src="images/{{ object.name }}.png"></a>
+                            <div class="media-body">
+                                <h2 class="text-white display-6 capitalize">{{ object.name }}</h2>
+                                <p class="text-light">{{ object.description }}</p>
+                                <div><span class="badge badge-primary ">{{ object.tenantType }}</span>
+                                <img src="images/dc.png" class="provider-icon" ng-if="object.dc"/> 
+                                <img src="images/azure.png" class="provider-icon" ng-if="object.azure"/> 
+                                <img src="images/aws.png" class="provider-icon" ng-if="object.aws"/> 
+                                </div>
+                                
+                            </div>
+                        </div>
+                        
+                    </div>
+
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item" ng-repeat="application in object.applications | orderBy:'id'">
+                            <a ng-click="deploy(object,application)" href="#"> <i class="fa fa-{{ application.deployed?'check-':'' }}circle-o"></i> {{ application.name }}     
+                            <span ng-if="application.deployed" class="badge badge-success pull-right"> On </span>
+                            <span ng-if="!application.deployed" class="badge badge-danger pull-right"> Off </span>
+                            <!-- <span class="badge badge-{{ application.deployed?'success':'danger' }} pull-right"> {{ application.deployed?'On':'Off' }} </span>-->
+                            </a>
+                            <br/>
+                            <a class="description pull-right">{{ application.description }} </a>                            
+                        </li>
+                    </ul>
+
+                    <section class="alert alert-danger card absolute" ng-if="department.id==object.id">
+                        <div class="card-content department">
+                        <div class="">
+                            <div class="corner-ribon black-ribon">
+                                <i class="fa fa-close"></i>
+                            </div>
+                            <div ng-if="department.id==object.id">
+                                <div class="lds-ripple">
+                                    <div></div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </section>
+
+                </div>
+                <div class="footer">
+                    <footer class="twt-footer card-footer">
+                        <a href="#"><i class="fa fa-info"></i></a>
+                        Total # of systems
+                        <span class="pull-right">
+                            {{ object.applications.length }}
+                        </span>
+                    </footer>
+
+                </div>
+
+                </section>
+            </div>
+
+
+            <div class="col-xl-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>World</h4>
+                    </div>
+                    <div class="Vector-map-js">
+                        <div id="vmap" class="vmap" style="height: 265px;"></div>
+                    </div>
+                </div>
+                <!-- /# card -->
+            </div>
+
+
+        </div> <!-- .content -->
+    </div><!-- /#right-panel -->
+
+    <!-- Right Panel -->
+
+    <!-- Modal Forms -->
+    <!-- Compliance modal -->
+    <div class="modal fade" id="policymodal" tabindex="-1" role="dialog" aria-labelledby="policymodalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="policymodalLabel">Policy View</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form class="">
+                    <div class="modal-body">
+                        <div class="form-group"><label for="nf-policy" class=" form-control-label">Policy</label>
+                            <span class="form-control">{{ currentPolicy.metadata.name }}</span>
+                        </div>
+                        <div class="form-group"><label for="nf-controls" class=" form-control-label">Details</label>
+                            <span class="form-control">{{ currentPolicy.metadata.annotations['policy.open-cluster-management.io/description'] }}</span>
+                        </div>
+                        <div class="form-group"><label for="nf-controls" class=" form-control-label">Controls</label>
+                            <span class="form-control">{{ currentPolicy.metadata.annotations['policy.open-cluster-management.io/controls'] }}</span>
+                        </div>
+                        <div class="form-group"><label for="nf-standards" class=" form-control-label">Standards</label>
+                            <span class="form-control">{{ currentPolicy.metadata.annotations['policy.open-cluster-management.io/standards'] }}</span>
+                        </div>
+                        <h5> Status </h5>
+                        <div ng-repeat="status in currentPolicy.status.status" class="row form-group">
+                            <div class="col col-md-2">
+                                <label for="nf-status" class=" form-control-label">{{ status.clustername }}</label>
+                            </div>
+                            <div class="col col-md-6">
+                                <span class="form-control"><i class="fa fa-thumbs-{{status.compliant == 'Compliant'?'up':'down'}}"></i> {{ status.compliant }}</span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+            </div>
+        </div>
+    </div>
+    <!-- Compliance modal -->
+
+    <script src="vendors/jquery/dist/jquery.min.js"></script>
+    <script src="vendors/popper.js/dist/umd/popper.min.js"></script>
+    <script src="vendors/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="assets/js/main.js"></script>
+
+
+    <script src="assets/js/dashboard.js"></script>
+    
+    <script src="vendors/jqvmap/dist/jquery.vmap.min.js"></script>
+    <script src="vendors/jqvmap/examples/js/jquery.vmap.sampledata.js"></script>
+    <script src="vendors/jqvmap/dist/maps/jquery.vmap.world.js"></script>
+
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+
+    <script>
+        var app = angular.module("DoraManagement", []);
+        app.directive('onFinishRender', ['$timeout', '$parse', function ($timeout, $parse) {
+        return {
+            restrict: 'A',
+            link: function (scope, element, attr) {
+                if (scope.$last === true) {
+                    $timeout(function () {
+                        scope.$emit('ngRepeatFinished');
+                        if ( !! attr.onFinishRender) {
+                            $parse(attr.onFinishRender)(scope);
+                        }
+                    });
+                }
+                if (!!attr.onStartRender) {
+                    if (scope.$first === true) {
+                        $timeout(function () {
+                            scope.$emit('ngRepeatStarted');
+                            if ( !! attr.onStartRender) {
+                                $parse(attr.onStartRender)(scope);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+        }]);
+        app.controller("DoraManagementController", function ($scope, $http) {
+            $scope.model=[];
+            $scope.webSocket = true;
+            $scope.department=null;
+            _refreshPageData();
+
+            // provisioning and app deployment 
+            function _refreshPageData() {
+                var method = "GET";
+                var url = 'http://{composite}/department';
+                var data = {};
+                $http({
+                    method: method,
+                    url: url,
+                    data: angular.toJson(data),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin' : '*'
+                    }
+                }).then(function successCallback(response) {
+                    $scope.model = response.data;
+                    if($scope.webSocket) {
+                        $scope.model.forEach((department) => {
+                            connectToSystems(department.id);
+                        });
+                        $scope.webSocket = false;
+                    }
+                }, function errorCallback(response) {
+                    console.log(response.statusText);
+                });
+            }
+            
+            $scope.provision = function(department,location,action){
+                var method = "POST";
+                var url = 'http://{composite}/department/provision/trigger';
+                $scope.department = department;
+                var data = {"department" : department.name.toLowerCase(), 
+                            "action": action, 
+                            "location": location,
+                            "type":department.tenantType};
+                $http({
+                    method: method,
+                    url: url,
+                    data: angular.toJson(data),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin' : '*'
+                    }
+                }).then(function successCallback(response) {
+                    _refreshPageData();
+                }, function errorCallback(response) {
+            
+                });
+            }
+
+            $scope.deploy = function(department, application){
+                $scope.department = department;
+                var method = "POST";
+                var url = 'http://{composite}/department/deploy/trigger';                
+                var data = {"department" : department.name.toLowerCase(), "action": application.deployed?"remove":"deploy", "location": "dc", "system":application.name.toLowerCase()};
+                $http({
+                    method: method,
+                    url: url,
+                    data: angular.toJson(data),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin' : '*'
+                    }
+                }).then(function successCallback(response) {
+                    _refreshPageData();
+                }, function errorCallback(response) {
+            
+                });
+            }
+
+            $scope.scale = function(department,scaler,action){
+                var method = "POST";
+                var url = 'http://{composite}/department/scale/trigger';
+                $scope.department = department;
+                var data = {"department" : department.name.toLowerCase(), 
+                            "action": action, 
+                            "scaler": scaler};
+                $http({
+                    method: method,
+                    url: url,
+                    data: angular.toJson(data),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin' : '*'
+                    }
+                }).then(function successCallback(response) {
+                    _refreshPageData();
+                }, function errorCallback(response) {
+            
+                });
+            }
+
+            function connectToSystems(department) {
+                socket = new WebSocket("ws://{composite}/callback/" + department);
+                socket.onopen = function() {
+                    console.log("Connected to the web socket");
+                };
+                socket.onmessage =function(m) {
+                    console.log("Got message: " + m.data);
+                    if(m.data=='ping')
+                        return;
+                    $scope.department=null;
+                    _refreshPageData();
+                };
+            } 
+
+            // Policy and Compliance
+            $scope.policies=[];
+            $scope.currentPolicy=null;
+            _refreshPolicy();
+            function _refreshPolicy() {
+                var method = "GET";
+                var url = 'http://{composite}/department/policy';
+                $http({
+                    method: method,
+                    url: url,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin' : '*'
+                    }
+                }).then(function successCallback(response) {
+                    $scope.policies = response.data.items;
+                    //console.log(response.data);
+                }, function errorCallback(response) {
+                    console.log(response.statusText);
+                });
+            }
+            
+            $scope.prePolicyModal = function(policy){
+                $scope.currentPolicy = policy;
+            }
+            
+        });
+
+
+        (function($) {
+            "use strict";
+
+            jQuery('#vmap').vectorMap({
+                map: 'world_en',
+                backgroundColor: null,
+                color: '#ffffff',
+                hoverOpacity: 0.7,
+                selectedColor: '#1de9b6',
+                enableZoom: true,
+                showTooltip: true,
+                values: sample_data,
+                scaleColors: ['#1de9b6', '#03a9f5'],
+                normalizeFunction: 'polynomial'
+            });
+        })(jQuery);
+    </script>
+
+</body>
+
+</html>
