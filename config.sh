@@ -17,6 +17,9 @@ export AWS_SECRET_ACCESS_KEY=
 #baseDomain: sandbox2941.opentlc.com
 # =====================================================================
 
+clear 
+
+# https://patorjk.com/software/taag/#p=display&h=1&v=1&f=RubiFont&t=Config
 # if no argument arguments, print the help
 if [[ $# -eq 0 ]] ; then
     echo " ▗▄▄▖ ▗▄▖ ▗▖  ▗▖▗▄▄▄▖▗▄▄▄▖ ▗▄▄▖"
@@ -24,8 +27,11 @@ if [[ $# -eq 0 ]] ; then
     echo "▐▌   ▐▌ ▐▌▐▌ ▝▜▌▐▛▀▀▘  █  ▐▌▝▜▌           _\|/_      "
     echo "▝▚▄▄▖▝▚▄▞▘▐▌  ▐▌▐▌   ▗▄█▄▖▝▚▄▞▘           (o o)      "
     echo '┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━oOO.{-}.OOo━━┓'
-    echo '┃  use one of the following arguments               ┃'
+    echo '┃ [x] use one of the following arguments            ┃'
+    echo '┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫'
     echo '┃  ./config.sh infra             # create infra     ┃'
+    echo '┃  ./config.sh aap i             # install aap      ┃'
+    echo '┃  ./config.sh aap c             # configure aap    ┃'
     echo '┃  ./config.sh pipeline c        # create pipelines ┃'
     echo '┃  ./config.sh pipeline d        # delete pipelines ┃'
     echo '┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'
@@ -190,6 +196,8 @@ fi
 if [ $1 = "pipeline" ]
 then
 
+tar -cvzf pipelines.tar.gz gitops/pipelines
+
 # pipelines
 # replace all CLUSTER_URL with HUB_CLUSTER_URL
 # for Linux, use following
@@ -221,9 +229,105 @@ oc delete route -n hub-ns -l app.kubernetes.io/managed-by=EventListener
 fi 
 # end of delete pipelines
 
+tar -xvzf pipelines.tar.gz -C .
+rm pipelines.tar.gz
+
 fi
 # end of pipeline arguments
 
+
+# start AAP Setup
+if [[ $1 = "aap" ]] && [[ $2 = "i" ]]
+then
+
+oc new-project ansible-automation-platform
+
+# install AAP Operator
+cat <<EOF | oc apply -f -
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    openshift.io/cluster-monitoring: "true"
+  name: ansible-automation-platform
+---
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: ansible-automation-platform-operator
+  namespace: ansible-automation-platform
+spec:
+  targetNamespaces:
+    - ansible-automation-platform
+---
+apiVersion: operators.coreos.com/v1alpha1
+kind: Subscription
+metadata:
+  name: ansible-automation-platform
+  namespace: ansible-automation-platform
+spec:
+  channel: 'stable-2.5'
+  installPlanApproval: Automatic
+  name: ansible-automation-platform-operator
+  source: redhat-operators
+  sourceNamespace: openshift-marketplace
+---
+EOF
+
+echo "Check until PHASE Routes --> Succeeded "
+oc get csv -n ansible-automation-platform -w
+
+fi
+
+
+# configure AAP
+if [[ $1 = "aap" ]] && [[ $2 = "c" ]]
+then
+
+oc project ansible-automation-platform
+
+# Create AnsibleAutomationPlatform CRD instance 
+oc apply -f - <<EOF
+apiVersion: aap.ansible.com/v1alpha1
+kind: AnsibleAutomationPlatform
+metadata:
+  name: myaap
+  namespace: ansible-automation-platform
+spec:
+  # Platform
+  image_pull_policy: IfNotPresent
+  # Components
+  controller:
+    disabled: false
+  eda:
+    disabled: false
+  hub:
+    disabled: false
+    ## Modify to contain your RWM storage class name
+    storage_type: file
+    file_storage_storage_class: <your-read-write-many-storage-class>
+    file_storage_size: 10Gi
+
+    ## uncomment if using S3 storage for Content pod
+    # storage_type: S3
+    # object_storage_s3_secret: example-galaxy-object-storage
+
+    ## uncomment if using Azure storage for Content pod
+    # storage_type: azure
+    # object_storage_azure_secret: azure-secret-name
+  lightspeed:
+    disabled: true
+EOF
+
+oc wait --for=condition=Admitted route/myaap -n ansible-automation-platform --timeout=60s
+
+oc get routes -n ansible-automation-platform
+
+# get admin user password
+oc get secret/myaap-admin-password -o jsonpath={.data.password} | base64 --decode
+
+fi
 
 # create azuer native on DC cluster 
 # change requesy : namespace per department oc create pss-azure
