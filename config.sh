@@ -14,8 +14,13 @@ export HUB_CLUSTER_URL=
 export BASE_DOMAIN=
 export AWS_ACCESS_KEY_ID=
 export AWS_SECRET_ACCESS_KEY=
-#baseDomain: sandbox2941.opentlc.com
 # =====================================================================
+# Azure 
+export AZURE_CLIENT_ID=
+export AZURE_CLIENT_SECRET=
+export AZURE_TENANT_ID=
+export AZURE_SUBSCRIPTION_ID=
+export RESOURCEGROUP=
 
 clear 
 
@@ -119,7 +124,6 @@ EOF
 
 # END
 
-
 # hub-ns namespace  
 oc new-project hub-ns
 # managed by gitops
@@ -158,8 +162,22 @@ oc adm policy \
     system:serviceaccount:hub-ns:pipeline
 
 # install operators
-# Start: We usually use web console for this 
 # Azure services operator
+
+cat <<EOF | oc apply -f -
+apiVersion: v1
+kind: Secret
+metadata:
+  name: azureoperatorsettings
+  namespace: openshift-operators
+stringData:
+  AZURE_TENANT_ID: $AZURE_TENANT_ID
+  AZURE_SUBSCRIPTION_ID: $AZURE_SUBSCRIPTION_ID
+  AZURE_CLIENT_ID: $AZURE_CLIENT_ID
+  AZURE_CLIENT_SECRET: $AZURE_CLIENT_SECRET
+  AZURE_CLOUD_ENV: AzurePublicCloud
+EOF
+
 # Service interconnect
 
 # RHSI: creaet SA account
