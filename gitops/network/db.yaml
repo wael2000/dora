@@ -97,7 +97,7 @@ spec:
               mountPath: /var/lib/mysql/data
           terminationMessagePolicy: File
           image: >-
-            image-registry.openshift-image-registry.svc:5000/openshift/mysql@sha256:73c5f44e43123f8ff0972d62ca5f8cf6f3ee673a5c1dc7379b3e049bcc0c6c53
+            image-registry.openshift-image-registry.svc:5000/openshift/mysql
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       dnsPolicy: ClusterFirst

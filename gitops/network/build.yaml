@@ -28,7 +28,13 @@ spec:
     to:
       kind: ImageStreamTag
       name: 'php-crud:latest'
-  resources: {}
+  resources: 
+    limits:
+      cpu: '512m'
+      memory: 512Mi
+    requests:
+      cpu: 128m
+      memory: 256Mi
   successfulBuildsHistoryLimit: 5
   failedBuildsHistoryLimit: 5
   strategy:
