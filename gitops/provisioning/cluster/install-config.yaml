@@ -40,4 +40,4 @@ platform:
     region: us-east-1
 pullSecret: "" # skip, hive will inject based on it's secrets
 sshKey: |-
-    ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDJkVZi4205Q0SUPWfRLl1j5XnQGiRRS0LauFAXnCnznoKFG+2JbKk9+Ny6kVFAnqMpQPbbVCKifbYj9yOBHV4GvdHvn5/fuKCc6Zbg5MjaNw5hPkXkK9oYBxRwrOyOWoIamjdyU7VP+o8hmWC20rbaHH8YokPgbk7B1uldRO1ziw== noname
+    ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQDbSdFQaqi31q/Jypc37Im8zMTMzEytstwkK47mItNVxWdzAAGLeojOHHk2kJCkl/LoNS4PuJoTDuKmnf3+7Czx8hWRlIbwuRnHq6zdGhqQ4IZEtEH0kuWpY2V3aGF4+wVxw0ot7vfj0yvGpnTe2FycyGqPgDHu3v6JPk3/ctHeXw== noname

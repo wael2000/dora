@@ -5,7 +5,7 @@ metadata:
   name: postgresqlserver-fsi
 spec:
   location: eastus
-  resourceGroup: openenv-jzjcr
+  resourceGroup: openenv-7z67p
   serverVersion: "10"
   sslEnforcement: Enabled
   replicaProperties: {}
@@ -24,7 +24,7 @@ kind: PostgreSQLDatabase
 metadata:
   name: fsi
 spec:
-  resourceGroup: openenv-jzjcr
+  resourceGroup: openenv-7z67p
   server: postgresqlserver-fsi
 ---
 apiVersion: azure.microsoft.com/v1alpha1
@@ -32,7 +32,7 @@ kind: PostgreSQLFirewallRule
 metadata:
   name: postgresqlfirewallrule-fsi
 spec:
-  resourceGroup: openenv-jzjcr
+  resourceGroup: openenv-7z67p
   server: postgresqlserver-fsi
   startIpAddress: 0.0.0.0
   endIpAddress: 255.255.255.255

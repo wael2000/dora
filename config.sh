@@ -131,6 +131,10 @@ oc label ns hub-ns argocd.argoproj.io/managed-by=openshift-gitops --overwrite
 # assign pipeline sa admin role in openshift-gitops namesapce
 oc policy add-role-to-user admin system:serviceaccount:hub-ns:pipeline -n openshift-gitops
 
+# azure native
+oc new-project azure-native
+oc label ns azure-native argocd.argoproj.io/managed-by=openshift-gitops --overwrite
+
 # lift pipeline permission up 
 # create a new cluster role 
 cat <<EOF | oc apply -f -
@@ -194,10 +198,15 @@ oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:hub-n
 # - update cluster-secrets-list.yaml
 # - update cluser-secrets.yaml with the three entries (base64 encoded values)
 
+# replace BASE_DOMAIN in cluster.yaml
 export CLUSTER_DEFINITION=$(sed -e "s/BASE_DOMAIN/$BASE_DOMAIN/g" gitops/provisioning/cluster/cluster.yaml | base64)
+
+# No replacemnet in cluster-set.yaml, read it as is
 export CLUSTER_SET_DEFINITION=$(cat gitops/provisioning/cluster/cluster-set.yaml | base64)
 
+# replace BASE_DOMAIN in install-config.yaml
 export INSTALL_CONFIG=$(sed -e "s/BASE_DOMAIN/$BASE_DOMAIN/g" gitops/provisioning/cluster/install-config.yaml | base64)
+
 export SECRETS=$(sed -e "s|INSTALL_CONFIG|$INSTALL_CONFIG|" -e "s|AWS_ACCESS_KEY_ID|$AWS_ACCESS_KEY_ID|" -e "s|AWS_SECRET_ACCESS_KEY|$AWS_SECRET_ACCESS_KEY|" gitops/provisioning/cluster/cluster-secrets-list.yaml | base64)
 
 #create secret/cluster-secrets 

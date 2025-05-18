@@ -19,11 +19,11 @@ spec:
     - default: 'http://dashboard-hub-ns.apps.CLUSTER_URL/department/deploy/commit'
       name: callback_url
       type: string
- tasks:
+  tasks:
     - name: git-clone
       params:
-        - name: URL
-          value: 'https://github.com/wael2000/dora'
+        - name: url
+          value: 'https://github.com/wael2000/rws'
         - name: revision
           value: main
         - name: refspec
@@ -55,16 +55,48 @@ spec:
         - name: userHome
           value: /home/git
       taskRef:
-        params:
-          - name: kind
-            value: task
-          - name: name
-            value: git-clone
-          - name: namespace
-            value: openshift-pipelines
-        resolver: cluster
+        kind: ClusterTask
+        name: git-clone
       workspaces:
         - name: output
+          workspace: source
+    - name: deploy-app
+      params:
+        - name: SCRIPT
+          value: sed -e 's/DEPARTMENT/$(params.department)/g' -e 's/SYSTEM/$(params.system)/g' -e 's/LOCATION/$(params.location)/g' gitops/applicationset.yaml | oc create -f - -n openshift-gitops
+        - name: VERSION
+          value: latest
+      runAfter:
+        - git-clone
+      taskRef:
+        kind: ClusterTask
+        name: openshift-client
+      when:
+        - input: $(params.action)
+          operator: in
+          values:
+            - deploy
+      workspaces:
+        - name: manifest-dir
+          workspace: source
+    - name: remove-app
+      params:
+        - name: SCRIPT
+          value: sed -e 's/DEPARTMENT/$(params.department)/g' -e 's/SYSTEM/$(params.system)/g' -e 's/LOCATION/$(params.location)/g' gitops/applicationset.yaml | oc delete -f - -n openshift-gitops
+        - name: VERSION
+          value: latest
+      runAfter:
+        - git-clone
+      taskRef:
+        kind: ClusterTask
+        name: openshift-client
+      when:
+        - input: $(params.action)
+          operator: in
+          values:
+            - remove
+      workspaces:
+        - name: manifest-dir
           workspace: source
     - name: deploy-callback
       params:
@@ -107,56 +139,6 @@ spec:
             - remove
       workspaces:
         - name: workspace
-          workspace: source
-    - name: deploy-app
-      params:
-        - name: SCRIPT
-          value: sed -e 's/DEPARTMENT/$(params.department)/g' -e 's/SYSTEM/$(params.system)/g' -e 's/LOCATION/$(params.location)/g' gitops/applicationset.yaml | oc create -f - -n openshift-gitops
-        - name: VERSION
-          value: latest
-      runAfter:
-        - git-clone
-      taskRef:
-        params:
-          - name: kind
-            value: task
-          - name: name
-            value: openshift-client
-          - name: namespace
-            value: openshift-pipelines
-        resolver: cluster
-      when:
-        - input: $(params.action)
-          operator: in
-          values:
-            - deploy
-      workspaces:
-        - name: manifest_dir
-          workspace: source
-    - name: remove-app
-      params:
-        - name: SCRIPT
-          value: sed -e 's/DEPARTMENT/$(params.department)/g' -e 's/SYSTEM/$(params.system)/g' -e 's/LOCATION/$(params.location)/g' gitops/applicationset.yaml | oc delete -f - -n openshift-gitops
-        - name: VERSION
-          value: latest
-      runAfter:
-        - git-clone
-      taskRef:
-        params:
-          - name: kind
-            value: task
-          - name: name
-            value: openshift-client
-          - name: namespace
-            value: openshift-pipelines
-        resolver: cluster
-      when:
-        - input: $(params.action)
-          operator: in
-          values:
-            - remove
-      workspaces:
-        - name: manifest_dir
           workspace: source
   workspaces:
     - name: source

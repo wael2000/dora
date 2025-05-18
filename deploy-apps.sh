@@ -1,6 +1,6 @@
 # replace CLUSTER_URL with env url (e.g. cluster-dtvxj.dtvxj.sandbox3050.opentlc.com)
 # =====================================================================
-export HUB_CLUSTER_URL=cluster-xsqm7.xsqm7.sandbox1255.opentlc.com
+export HUB_CLUSTER_URL=cluster-v94dp.v94dp.sandbox2256.opentlc.com
 # =====================================================================
 
 # create placement objects if not created

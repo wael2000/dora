@@ -15,9 +15,9 @@ spec:
   tasks:
     - name: git-clone
       params:
-        - name: url
-          value: 'https://github.com/wael2000/dora'
-        - name: revision
+        - name: URL
+          value: https://github.com/wael2000/dora
+        - name: RIVISION
           value: main
         - name: refspec
           value: ''
@@ -44,12 +44,19 @@ spec:
         - name: verbose
           value: 'true'
         - name: gitInitImage
-          value: 'registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel8@sha256:9b14f52b21d29d8d83ea4c0e78623debc954f1a732d2be6d1a7269fbba23b1a4'
+          value: >-
+            registry.redhat.io/openshift-pipelines/pipelines-git-init-rhel8@sha256:9b14f52b21d29d8d83ea4c0e78623debc954f1a732d2be6d1a7269fbba23b1a4
         - name: userHome
           value: /home/git
       taskRef:
-        kind: ClusterTask
-        name: git-clone
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: git-clone
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
       when:
         - input: $(params.action)
           operator: in
@@ -61,34 +68,53 @@ spec:
     - name: deploy-azure-service
       params:
         - name: SCRIPT
-          value: sed -e 's/DEPARTMENT/$(params.department)/g' gitops/db/azure-db-application.yaml | oc create -f - -n openshift-gitops
+          value: >-
+            sed -e 's/DEPARTMENT/$(params.department)/g'
+            gitops/db/azure-db-application.yaml | oc create -f - -n
+            openshift-gitops
         - name: VERSION
           value: latest
       runAfter:
         - git-clone
       taskRef:
-        kind: ClusterTask
-        name: openshift-client
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
       when:
         - input: $(params.action)
           operator: in
           values:
             - deploy
       workspaces:
-        - name: manifest-dir
+        - name: manifest_dir
           workspace: source
     - name: add-ns-to-gitops
       params:
         - name: SCRIPT
-          #value: oc label ns $(params.department)-azure argocd.argoproj.io/managed-by=openshift-gitops --overwrite
-          value: oc label ns azure-native argocd.argoproj.io/managed-by=openshift-gitops --overwrite
+          value: >-
+            oc label ns azure-native
+            argocd.argoproj.io/managed-by=openshift-gitops --overwrite
         - name: VERSION
           value: latest
       runAfter:
         - deploy-azure-service
       taskRef:
-        kind: ClusterTask
-        name: openshift-client
+        params:
+          - name: kind
+            value: task
+          - name: name
+            value: openshift-client
+          - name: namespace
+            value: openshift-pipelines
+        resolver: cluster
+      workspaces:
+        - name: manifest_dir
+          workspace: source
   workspaces:
     - name: source
 ---
