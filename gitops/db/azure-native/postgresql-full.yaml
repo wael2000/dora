@@ -1,38 +1,33 @@
-# resourceGroup need to be replaces with RG NAME
-apiVersion: azure.microsoft.com/v1alpha2
-kind: PostgreSQLServer
+kind: AzureSqlServer
+apiVersion: azure.microsoft.com/v1beta1
 metadata:
-  name: postgresqlserver-fsi
+  name: sqlserver-fsi
+  namespace: hub-ns
 spec:
   location: eastus
   resourceGroup: openenv-7z67p
-  serverVersion: "10"
-  sslEnforcement: Enabled
-  replicaProperties: {}
-  sku:
-    name: B_Gen5_2
-    tier: Basic
-    family: Gen5
-    size: "51200"
-    capacity: 2
-  # Use the field below to optionally specify a different keyvault 
-  # to store the server admin credential secrets in
-  #keyVaultToStoreSecrets: asoSecretKeyVault
 ---
-apiVersion: azure.microsoft.com/v1alpha1
-kind: PostgreSQLDatabase
+kind: AzureSqlDatabase
+apiVersion: azure.microsoft.com/v1beta1
 metadata:
   name: fsi
+  namespace: hub-ns
 spec:
+  edition: 1
+  location: eastus
   resourceGroup: openenv-7z67p
-  server: postgresqlserver-fsi
+  server: sqlserver-fsi
+  sku:
+    name: Basic
+    tier: Basic
 ---
-apiVersion: azure.microsoft.com/v1alpha1
-kind: PostgreSQLFirewallRule
+kind: AzureSqlFirewallRule
+apiVersion: azure.microsoft.com/v1beta1
 metadata:
-  name: postgresqlfirewallrule-fsi
+  name: sqlf-fsi
+  namespace: hub-ns
 spec:
+  endIpAddress: 0.0.0.0
   resourceGroup: openenv-7z67p
-  server: postgresqlserver-fsi
+  server: sqlserver-fsi
   startIpAddress: 0.0.0.0
-  endIpAddress: 255.255.255.255
