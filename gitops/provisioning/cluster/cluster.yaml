@@ -27,7 +27,7 @@ spec:
     sshPrivateKeySecretRef:
       name: NAMESPACE-cluster-ssh-private-key
     imageSetRef:
-      name: img4.15.16-multi-appsub
+      name: img4.16.40-multi-appsub
   pullSecretRef:
     name: NAMESPACE-cluster-pull-secret
 ---
